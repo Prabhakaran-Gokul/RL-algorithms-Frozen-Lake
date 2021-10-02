@@ -81,7 +81,7 @@ class MonteCarlo:
         return episode 
 
 
-    def fv_mc_without_ES(self, num_of_episodes):
+    def run(self, num_of_episodes):
         #tqdm module is used here to display the progress of our training, via a progress bar
         print ("First visit Monte Carlo control without Exploring starts algorithm is starting...")
         for i in tqdm(range(num_of_episodes)):
@@ -131,7 +131,7 @@ class MonteCarlo:
             action = self.get_best_action(state)
             new_state , reward, done = self.env.step(action)
             path.append(new_state)
-            if len(set(path)) != len(path): #check if the robot is stuck somewhere in the grid
+            if len(set(path)) != len(path): #check if the robot visits some place more than twice in the path
                 break
             if done:
                 break
@@ -150,7 +150,7 @@ class MonteCarlo:
 if __name__ == "__main__":
     env = Environment(grid_size=GRID_SIZE)
     monte_carlo = MonteCarlo(env, epsilon=EPSILON, gamma=GAMMA)
-    Q_values = monte_carlo.fv_mc_without_ES(NUMBER_OF_EPISODES)
+    Q_values = monte_carlo.run(NUMBER_OF_EPISODES)
     monte_carlo.write_to_txt_file(Q_values)
     print(monte_carlo.success_count, monte_carlo.failure_count)
     print(monte_carlo.test_policy(monte_carlo.policy_table))
