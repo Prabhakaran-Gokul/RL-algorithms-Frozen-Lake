@@ -1,10 +1,9 @@
-from os import stat
 from Parameters import *
 from Environment import Environment
 import numpy as np
 from tqdm import tqdm
 
-class SARSA:
+class Q_Learning:
     def __init__(self, env, epsilon, gamma, learning_rate):
         self.epsilon = epsilon
         self.gamma = gamma
@@ -41,7 +40,7 @@ class SARSA:
 
     def run(self, num_of_episodes):
         #tqdm module is used here to display the progress of our training, via a progress bar
-        print ("SARSA algorithm is starting...")
+        print ("Q_Learning algorithm is starting...")
         for i in tqdm(range(num_of_episodes)):
             step = 0
             state = self.env.reset()
@@ -52,8 +51,9 @@ class SARSA:
                     break
                 new_state , reward, done = self.env.step(action)
                 new_action = np.random.choice(self.actions, p = self.policy_table[new_state])
-                #apply SARSA update rule
-                new_Q_value = self.Q_values[(new_state, new_action)]
+                
+                #apply q_learning update rule     
+                new_Q_value = max(self.Q_values[(new_state, a)] for a in self.actions)
                 self.Q_values[(state, action)] +=  self.learning_rate * (reward + self.gamma * new_Q_value - self.Q_values[(state, action)])
                 best_action = self.get_best_action(state)
                 
@@ -121,7 +121,7 @@ class SARSA:
 
     def write_to_txt_file(self, content):
         counter = 1
-        with open("SARSA_Q_values.txt", "w") as f:
+        with open("Q_Learning_Q_values.txt", "w") as f:
             for key, value in content.items():
                 if counter != 4:
                     f.write("%s:%s  " % (key,value))
@@ -132,9 +132,9 @@ class SARSA:
 
 if __name__ == "__main__":
     env = Environment(grid_size=GRID_SIZE)
-    sarsa = SARSA(env, epsilon=EPSILON, gamma=GAMMA, learning_rate=LEARNING_RATE)
-    Q_values = sarsa.run(NUMBER_OF_EPISODES)
-    sarsa.write_to_txt_file(Q_values)
-    print(sarsa.success_count, sarsa.failure_count)
-    print(sarsa.test_policy(sarsa.policy_table))
-    print(sarsa.get_optimal_path())
+    q_learning = Q_Learning(env, epsilon=EPSILON, gamma=GAMMA, learning_rate=LEARNING_RATE)
+    Q_values = q_learning.run(NUMBER_OF_EPISODES)
+    q_learning.write_to_txt_file(Q_values)
+    print(q_learning.success_count, q_learning.failure_count)
+    print(q_learning.test_policy(q_learning.policy_table))
+    print(q_learning.get_optimal_path())

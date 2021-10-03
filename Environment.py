@@ -16,7 +16,7 @@ class Environment:
         if self.grid_size == 4:
             raw_map = MAPS["4x4"]
         elif self.grid_size == 10:
-            raw_map = MAPS["4x4"]
+            raw_map = MAPS["10x10"]
         else:
             print("raise exception here")
         

@@ -1,9 +1,7 @@
 from Parameters import *
 from Environment import Environment
-import numpy as np
-from tqdm import tqdm
 
-class MonteCarlo:
+class RL_Model_Free_Methods():
     def __init__(self, env, epsilon, gamma):
         self.epsilon = epsilon
         self.gamma = gamma
@@ -26,17 +24,6 @@ class MonteCarlo:
                 num_of_visits[(state, action)] = 0
         return Q_values, returns, num_of_visits, policy_table
 
-    def get_best_action(self, state):
-        Q_values_at_given_state = []
-        for a in self.actions:
-            Q_values_at_given_state.append(self.Q_values[(state, a)])
-        best_actions = []
-        for idx, q in enumerate(Q_values_at_given_state):
-            if q == max(Q_values_at_given_state):
-                best_actions.append(idx)
-        best_action = np.random.choice(best_actions)             
-        return best_action
-
     def generate_episode(self, policy_table):
         episode = [] #a list containing lists of [state, action, reward] for every step
         state = self.env.reset()
@@ -57,29 +44,6 @@ class MonteCarlo:
             state = new_state
         return episode 
 
-
-    def run(self, num_of_episodes):
-        #tqdm module is used here to display the progress of our training, via a progress bar
-        print ("First visit Monte Carlo control without Exploring starts algorithm is starting...")
-        for i in tqdm(range(num_of_episodes)):
-            episode = self.generate_episode(self.policy_table)
-            G = 0
-            for t in reversed(range(0, len(episode))):
-                state , action, reward = episode[t]
-                G = self.gamma * G + reward
-                if (state, action) not in [(x[0], x[1]) for x in episode[0:t]]:
-                    self.returns[(state, action)] += G
-                    self.num_of_visits[(state, action)] += 1
-                    self.Q_values[(state, action)] = self.returns[(state, action)] / self.num_of_visits[(state, action)]
-                    #TODO make a function for the code below update_policy_table(state)
-                    best_action = self.get_best_action(state)
-                    for a in self.actions:
-                        if a == best_action:
-                            self.policy_table[state][a] = 1 - self.epsilon + self.epsilon/len(self.actions)
-                        else: 
-                            self.policy_table[state][a] = self.epsilon/len(self.actions)
-
-        return self.Q_values
 
     def write_to_txt_file(self, content):
         counter = 1
@@ -123,12 +87,3 @@ class MonteCarlo:
             if final_reward == 1:
                 reach_goal += 1
         return reach_goal / no_of_episodes
-
-if __name__ == "__main__":
-    env = Environment(grid_size=GRID_SIZE)
-    monte_carlo = MonteCarlo(env, epsilon=EPSILON, gamma=GAMMA)
-    Q_values = monte_carlo.run(NUMBER_OF_EPISODES)
-    monte_carlo.write_to_txt_file(Q_values)
-    print(monte_carlo.success_count, monte_carlo.failure_count)
-    print(monte_carlo.test_policy(monte_carlo.policy_table))
-    print(monte_carlo.get_optimal_path())
