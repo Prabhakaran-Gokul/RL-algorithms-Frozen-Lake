@@ -24,37 +24,16 @@ class RL_Model_Free_Methods():
                 num_of_visits[(state, action)] = 0
         return Q_values, returns, num_of_visits, policy_table
 
-    def generate_episode(self, policy_table):
-        episode = [] #a list containing lists of [state, action, reward] for every step
-        state = self.env.reset()
-        step = 0
-        while True:
-            step += 1
-            if step > MAX_STEPS:
-                break
-            action = np.random.choice(self.actions, p = policy_table[state])
-            new_state , reward, done = self.env.step(action)
-            episode.append([state, action, reward])
-            if done:
-                if reward == 1: 
-                    self.success_count += 1
-                if reward == -1:
-                    self.failure_count += 1
-                break
-            state = new_state
-        return episode 
-
-
-    def write_to_txt_file(self, content):
-        counter = 1
-        with open("Monte_carlo_Q_values.txt", "w") as f:
-            for key, value in content.items():
-                if counter != 4:
-                    f.write("%s:%s  " % (key,value))
-                    counter += 1
-                else:
-                    f.write("%s:%s  \n" % (key,value))
-                    counter = 1
+    def get_best_action(self, state):
+        Q_values_at_given_state = []
+        for a in self.actions:
+            Q_values_at_given_state.append(self.Q_values[(state, a)])
+        best_actions = []
+        for idx, q in enumerate(Q_values_at_given_state):
+            if q == max(Q_values_at_given_state):
+                best_actions.append(idx)
+        best_action = np.random.choice(best_actions)             
+        return best_action
 
     def plot_results(self, success_count, failure_count):
         pass
@@ -87,3 +66,14 @@ class RL_Model_Free_Methods():
             if final_reward == 1:
                 reach_goal += 1
         return reach_goal / no_of_episodes
+
+    def write_to_txt_file(self, content, algorithm_name):
+        counter = 1
+        with open(algorithm_name + "_Q_values.txt", "w") as f:
+            for key, value in content.items():
+                if counter != 4:
+                    f.write("%s:%s  " % (key,value))
+                    counter += 1
+                else:
+                    f.write("%s:%s  \n" % (key,value))
+                    counter = 1

@@ -1,42 +1,14 @@
 from Parameters import *
 from Environment import Environment
+from Rl_Model_Free_Methods import RL_Model_Free_Methods
 import numpy as np
 from tqdm import tqdm
 
-class Q_Learning:
+class Q_Learning(RL_Model_Free_Methods):
     def __init__(self, env, epsilon, gamma, learning_rate):
-        self.epsilon = epsilon
-        self.gamma = gamma
+        RL_Model_Free_Methods.__init__(self, env, epsilon, gamma)
         self.learning_rate = learning_rate
-        self.env = env
-        self.actions = self.env.actions
-        self.states = self.env.states
-        self.Q_values, self.returns, self.num_of_visits, self.policy_table = self.initialise_Q_table_and_policy_table()
-
-        #to measure success and failures of episodes
-        self.success_count = 0 
-        self.failure_count = 0
-
-    def initialise_Q_table_and_policy_table(self):
-        Q_values, returns, num_of_visits, policy_table = {}, {}, {}, {}
-        for state in self.states:
-            policy_table[state] = [1/len(self.actions)] * len(self.actions)
-            for action in self.actions:
-                Q_values[(state, action)] = 0
-                returns[(state, action)] = 0
-                num_of_visits[(state, action)] = 0
-        return Q_values, returns, num_of_visits, policy_table
-
-    def get_best_action(self, state):
-        Q_values_at_given_state = []
-        for a in self.actions:
-            Q_values_at_given_state.append(self.Q_values[(state, a)])
-        best_actions = []
-        for idx, q in enumerate(Q_values_at_given_state):
-            if q == max(Q_values_at_given_state):
-                best_actions.append(idx)
-        best_action = np.random.choice(best_actions)             
-        return best_action
+        self.name = "Q_Learning"
 
     def run(self, num_of_episodes):
         #tqdm module is used here to display the progress of our training, via a progress bar
@@ -74,26 +46,6 @@ class Q_Learning:
         
         return self.Q_values
 
-        #function to generate the optimal path using the training data
-    def get_optimal_path(self):
-        path = []
-        state = self.env.reset() 
-        step = 0 
-        path.append(state)
-        while True:
-            step += 1
-            if step > MAX_STEPS:
-                break
-            action = self.get_best_action(state)
-            new_state , reward, done = self.env.step(action)
-            path.append(new_state)
-            if len(set(path)) != len(path): #check if the robot visits some place more than twice in the path
-                break
-            if done:
-                break
-            state = new_state
-        return path
-
     def generate_episode(self, policy_table):
         episode = [] #a list containing lists of [state, action, reward] for every step
         state = self.env.reset()
@@ -110,31 +62,11 @@ class Q_Learning:
             state = new_state
         return episode 
 
-    def test_policy(self, policy):
-        reach_goal = 0
-        no_of_episodes = 100
-        for i in range(no_of_episodes):
-            final_reward = self.generate_episode(policy)[-1][-1]
-            if final_reward == 1:
-                reach_goal += 1
-        return reach_goal / no_of_episodes
-
-    def write_to_txt_file(self, content):
-        counter = 1
-        with open("Q_Learning_Q_values.txt", "w") as f:
-            for key, value in content.items():
-                if counter != 4:
-                    f.write("%s:%s  " % (key,value))
-                    counter += 1
-                else:
-                    f.write("%s:%s  \n" % (key,value))
-                    counter = 1
-
 if __name__ == "__main__":
     env = Environment(grid_size=GRID_SIZE)
     q_learning = Q_Learning(env, epsilon=EPSILON, gamma=GAMMA, learning_rate=LEARNING_RATE)
     Q_values = q_learning.run(NUMBER_OF_EPISODES)
-    q_learning.write_to_txt_file(Q_values)
+    q_learning.write_to_txt_file(Q_values, q_learning.name)
     print(q_learning.success_count, q_learning.failure_count)
     print(q_learning.test_policy(q_learning.policy_table))
     print(q_learning.get_optimal_path())
