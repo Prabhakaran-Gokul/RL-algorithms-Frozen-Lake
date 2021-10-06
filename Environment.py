@@ -1,5 +1,6 @@
 from Parameters import * #import parameters
 import numpy as np
+import matplotlib.pyplot as plt
 
 class Environment:
     def __init__(self, grid_size):
@@ -27,6 +28,9 @@ class Environment:
     #function to convert row and col to state
     def convert_row_col_to_state(self, row, col):
         return row * self.n_col + col
+
+    def convert_state_to_row_col(self, state):
+        return (state // self.n_row, state % self.n_row)
 
     def get_reward(self, letter):
         if letter == b"G":
@@ -62,5 +66,31 @@ class Environment:
         self.curr_col = 0
         return self.convert_row_col_to_state(self.curr_row, self.curr_col)
 
+    def render(self, path):
+        blue = [0, 255, 255]
+        black = [0, 0 , 0]
+        green = [0, 255, 0]
+        red = [255, 0, 0]
+        yellow = [255, 255, 51]
+        map_list =  [[[state.decode("utf-8")] for state in row] for row in self.map]
+        for row in range(len(map_list)):
+            for col in range(len(map_list)):
+                if map_list[row][col][0] == "F":
+                    map_list[row][col] = blue
+                elif map_list[row][col][0] == "H":
+                    map_list[row][col] = black
+                elif map_list[row][col][0] == "S":
+                    map_list[row][col] = green
+                elif map_list[row][col][0] == "G":
+                    map_list[row][col] = red  
+        
+        for state in path:
+            row, col = self.convert_state_to_row_col(state)
+            map_list[row][col] = yellow
 
-    
+        map_array = np.asarray(map_list, dtype=np.int32)
+        fig = plt.figure(figsize=(8,8))
+        #TODO add in the arrows
+        plt.arrow(0, 0, 1, 0, length_includes_head = True, head_width=0.2, head_length=0.2)
+        plt.imshow(map_array)
+        plt.show()

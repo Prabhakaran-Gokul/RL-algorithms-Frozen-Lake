@@ -1,5 +1,4 @@
 from Parameters import *
-from Environment import Environment
 
 class RL_Model_Free_Methods():
     def __init__(self, env, epsilon, gamma):
