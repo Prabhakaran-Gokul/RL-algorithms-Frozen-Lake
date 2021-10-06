@@ -1,17 +1,21 @@
 from Parameters import *
+from ResultsGenerator import ResultsGenerator
 
 class RL_Model_Free_Methods():
-    def __init__(self, env, epsilon, gamma):
+    def __init__(self, env, rg, epsilon, gamma):
         self.epsilon = epsilon
         self.gamma = gamma
         self.env = env
         self.actions = self.env.actions
         self.states = self.env.states
+        self.total_reward = 0
         self.Q_values, self.returns, self.num_of_visits, self.policy_table = self.initialise_Q_table_and_policy_table()
 
         #to measure success and failures of episodes
         self.success_count = 0 
         self.failure_count = 0
+
+        self.rg = rg
 
     def initialise_Q_table_and_policy_table(self):
         Q_values, returns, num_of_visits, policy_table = {}, {}, {}, {}

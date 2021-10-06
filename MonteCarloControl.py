@@ -3,10 +3,11 @@ from Environment import Environment
 import numpy as np
 from tqdm import tqdm
 from Rl_Model_Free_Methods import RL_Model_Free_Methods
+import time
 
 class MonteCarlo(RL_Model_Free_Methods):
-    def __init__(self, env, epsilon, gamma):
-        RL_Model_Free_Methods.__init__(self, env, epsilon, gamma)
+    def __init__(self, env, rg, epsilon, gamma):
+        RL_Model_Free_Methods.__init__(self, env, rg, epsilon, gamma)
         self.name = "Monte_carlo"
 
     def generate_episode(self, policy_table):
@@ -25,6 +26,7 @@ class MonteCarlo(RL_Model_Free_Methods):
                     self.success_count += 1
                 if reward == -1:
                     self.failure_count += 1
+                self.total_reward += reward 
                 break
             state = new_state
         return episode 
@@ -32,10 +34,13 @@ class MonteCarlo(RL_Model_Free_Methods):
 
     def run(self, num_of_episodes):
         #tqdm module is used here to display the progress of our training, via a progress bar
+        start_time = time.time()
         print ("First visit Monte Carlo control without Exploring starts algorithm is starting...")
         for i in tqdm(range(num_of_episodes)):
             episode = self.generate_episode(self.policy_table)
             G = 0
+
+            self.rg.Monte_carlo_results["Average_Reward"].append(self.total_reward / (i + 1))
             for t in reversed(range(0, len(episode))):
                 state , action, reward = episode[t]
                 G = self.gamma * G + reward
@@ -51,13 +56,17 @@ class MonteCarlo(RL_Model_Free_Methods):
                         else: 
                             self.policy_table[state][a] = self.epsilon/len(self.actions)
 
+        end_time = time.time()
+        self.rg.Monte_carlo_results["Computation_time"].append(end_time - start_time)
         return self.Q_values
 
-if __name__ == "__main__":
-    env = Environment(grid_size=GRID_SIZE)
-    monte_carlo = MonteCarlo(env, epsilon=EPSILON, gamma=GAMMA)
-    Q_values = monte_carlo.run(NUMBER_OF_EPISODES)
-    monte_carlo.write_to_txt_file(Q_values, monte_carlo.name)
-    print(monte_carlo.success_count, monte_carlo.failure_count)
-    print(monte_carlo.test_policy(monte_carlo.policy_table))
-    print(monte_carlo.get_optimal_path())
+# if __name__ == "__main__":
+#     env = Environment(grid_size=GRID_SIZE)
+#     monte_carlo = MonteCarlo(env, epsilon=EPSILON, gamma=GAMMA)
+#     Q_values = monte_carlo.run(NUMBER_OF_EPISODES)
+#     monte_carlo.write_to_txt_file(Q_values, monte_carlo.name)
+#     print(monte_carlo.success_count, monte_carlo.failure_count)
+#     print(monte_carlo.test_policy(monte_carlo.policy_table))
+#     print(monte_carlo.get_optimal_path())
+#     # monte_carlo.rg.plot_average_reward_vs_episode(monte_carlo.name)
+#     monte_carlo.rg.plot_computation_time()
