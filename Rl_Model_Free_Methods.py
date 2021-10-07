@@ -1,5 +1,5 @@
 from Parameters import *
-from ResultsGenerator import ResultsGenerator
+import numpy as np
 
 class RL_Model_Free_Methods():
     def __init__(self, env, rg, epsilon, gamma):
@@ -8,12 +8,13 @@ class RL_Model_Free_Methods():
         self.env = env
         self.actions = self.env.actions
         self.states = self.env.states
-        self.total_reward = 0
         self.Q_values, self.returns, self.num_of_visits, self.policy_table = self.initialise_Q_table_and_policy_table()
 
         #to measure success and failures of episodes
         self.success_count = 0 
         self.failure_count = 0
+        
+        self.total_reward = 0
 
         self.rg = rg
 
@@ -38,8 +39,13 @@ class RL_Model_Free_Methods():
         best_action = np.random.choice(best_actions)             
         return best_action
 
-    def plot_results(self, success_count, failure_count):
-        pass
+    def update_policy_table(self, state):
+        best_action = self.get_best_action(state)
+        for a in self.actions:
+            if a == best_action:
+                self.policy_table[state][a] = 1 - self.epsilon + self.epsilon/len(self.actions)
+            else: 
+                self.policy_table[state][a] = self.epsilon/len(self.actions)
     
     #function to generate the optimal path using the training data
     def get_optimal_path(self):

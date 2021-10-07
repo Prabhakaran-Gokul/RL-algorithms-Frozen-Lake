@@ -1,4 +1,5 @@
-from Parameters import * #import parameters
+from PIL.Image import ImageTransformHandler
+from Parameters import * 
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -71,7 +72,7 @@ class Environment:
         black = [0, 0 , 0]
         green = [0, 255, 0]
         red = [255, 0, 0]
-        yellow = [255, 255, 51]
+        # yellow = [255, 255, 51]
         map_list =  [[[state.decode("utf-8")] for state in row] for row in self.map]
         for row in range(len(map_list)):
             for col in range(len(map_list)):
@@ -84,13 +85,27 @@ class Environment:
                 elif map_list[row][col][0] == "G":
                     map_list[row][col] = red  
         
-        for state in path:
-            row, col = self.convert_state_to_row_col(state)
-            map_list[row][col] = yellow
+        # for i in range(1, len(path) - 1):
+        #     row, col = self.convert_state_to_row_col(path[i])
+        #     map_list[row][col] = yellow
 
         map_array = np.asarray(map_list, dtype=np.int32)
         fig = plt.figure(figsize=(8,8))
-        #TODO add in the arrows
-        plt.arrow(0, 0, 1, 0, length_includes_head = True, head_width=0.2, head_length=0.2)
+        self.draw_grid_arrow(path)
+        information = "Green: Start\nRed: End\nBlack: Holes\nBlue: Ice\n"
+        plt.figtext(0.0, 0.0, information, fontsize = 5)
         plt.imshow(map_array)
+        plt.grid(linewidth = 1)
+        plt.subplots_adjust(left=0.25)
         plt.show()
+
+    def draw_grid_arrow(self, path):
+        for i in range(len(path) - 1):
+            start_state_coordinate = self.convert_state_to_row_col(path[i])
+            end_state_coordinate = self.convert_state_to_row_col(path[i+1])
+            dx, dy = (end_state_coordinate[1] - start_state_coordinate[1]), (end_state_coordinate[0] - start_state_coordinate[0])
+            
+            if (i == len(path) -2):
+                plt.arrow(start_state_coordinate[1], start_state_coordinate[0], dx, dy, length_includes_head = True, head_width=0.2, head_length=0.2)
+            else: 
+                plt.arrow(start_state_coordinate[1], start_state_coordinate[0], dx, dy, length_includes_head = False)

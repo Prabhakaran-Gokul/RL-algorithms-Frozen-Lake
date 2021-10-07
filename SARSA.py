@@ -1,5 +1,4 @@
 from Parameters import *
-from Environment import Environment
 import numpy as np
 from tqdm import tqdm
 from Rl_Model_Free_Methods import RL_Model_Free_Methods
@@ -29,13 +28,9 @@ class SARSA(RL_Model_Free_Methods):
                 #apply SARSA update rule
                 new_Q_value = self.Q_values[(new_state, new_action)]
                 self.Q_values[(state, action)] +=  self.learning_rate * (reward + self.gamma * new_Q_value - self.Q_values[(state, action)])
-                best_action = self.get_best_action(state)
                 
-                for a in self.actions:
-                    if a == best_action:
-                        self.policy_table[state][a] = 1 - self.epsilon + self.epsilon/len(self.actions)
-                    else: 
-                        self.policy_table[state][a] = self.epsilon/len(self.actions)
+                self.update_policy_table(state)
+
                 if done:
                     if reward == 1: 
                         self.success_count += 1
@@ -49,6 +44,7 @@ class SARSA(RL_Model_Free_Methods):
                 action = new_action
             
             self.rg.SARSA_results["Average_Reward"].append(self.total_reward / (i + 1))
+            self.rg.SARSA_results["Steps"].append(step)
         
         end_time = time.time()
         self.rg.SARSA_results["Computation_time"].append(end_time - start_time)

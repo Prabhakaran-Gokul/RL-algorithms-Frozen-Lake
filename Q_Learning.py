@@ -1,5 +1,4 @@
 from Parameters import *
-from Environment import Environment
 from Rl_Model_Free_Methods import RL_Model_Free_Methods
 import numpy as np
 from tqdm import tqdm
@@ -29,13 +28,9 @@ class Q_Learning(RL_Model_Free_Methods):
                 #apply q_learning update rule     
                 new_Q_value = max(self.Q_values[(new_state, a)] for a in self.actions)
                 self.Q_values[(state, action)] +=  self.learning_rate * (reward + self.gamma * new_Q_value - self.Q_values[(state, action)])
-                best_action = self.get_best_action(state)
                 
-                for a in self.actions:
-                    if a == best_action:
-                        self.policy_table[state][a] = 1 - self.epsilon + self.epsilon/len(self.actions)
-                    else: 
-                        self.policy_table[state][a] = self.epsilon/len(self.actions)
+                self.update_policy_table(state)
+                
                 if done:
                     if reward == 1: 
                         self.success_count += 1
@@ -49,6 +44,7 @@ class Q_Learning(RL_Model_Free_Methods):
                 action = new_action
 
             self.rg.Q_Learning_results["Average_Reward"].append(self.total_reward / (i + 1))
+            self.rg.Q_Learning_results["Steps"].append(step)
         
         end_time = time.time()
         self.rg.Q_Learning_results["Computation_time"].append(end_time - start_time)

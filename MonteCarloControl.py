@@ -1,5 +1,4 @@
 from Parameters import *
-from Environment import Environment
 import numpy as np
 from tqdm import tqdm
 from Rl_Model_Free_Methods import RL_Model_Free_Methods
@@ -29,6 +28,7 @@ class MonteCarlo(RL_Model_Free_Methods):
                 self.total_reward += reward 
                 break
             state = new_state
+        self.rg.Monte_carlo_results["Steps"].append(step)
         return episode 
 
 
@@ -48,25 +48,9 @@ class MonteCarlo(RL_Model_Free_Methods):
                     self.returns[(state, action)] += G
                     self.num_of_visits[(state, action)] += 1
                     self.Q_values[(state, action)] = self.returns[(state, action)] / self.num_of_visits[(state, action)]
-                    #TODO make a function for the code below update_policy_table(state)
-                    best_action = self.get_best_action(state)
-                    for a in self.actions:
-                        if a == best_action:
-                            self.policy_table[state][a] = 1 - self.epsilon + self.epsilon/len(self.actions)
-                        else: 
-                            self.policy_table[state][a] = self.epsilon/len(self.actions)
+                    
+                    self.update_policy_table(state)
 
         end_time = time.time()
         self.rg.Monte_carlo_results["Computation_time"].append(end_time - start_time)
         return self.Q_values
-
-# if __name__ == "__main__":
-#     env = Environment(grid_size=GRID_SIZE)
-#     monte_carlo = MonteCarlo(env, epsilon=EPSILON, gamma=GAMMA)
-#     Q_values = monte_carlo.run(NUMBER_OF_EPISODES)
-#     monte_carlo.write_to_txt_file(Q_values, monte_carlo.name)
-#     print(monte_carlo.success_count, monte_carlo.failure_count)
-#     print(monte_carlo.test_policy(monte_carlo.policy_table))
-#     print(monte_carlo.get_optimal_path())
-#     # monte_carlo.rg.plot_average_reward_vs_episode(monte_carlo.name)
-#     monte_carlo.rg.plot_computation_time()
