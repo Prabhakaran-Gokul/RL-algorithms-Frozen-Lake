@@ -5,7 +5,7 @@ class ResultsGenerator():
     def __init__(self):
         self.algorithm_names = ["Monte_carlo", "SARSA", "Q_Learning"]
         self.Monte_carlo_results, self.SARSA_results, self.Q_Learning_results = {}, {}, {}
-        self.indicators = ["Average_Reward", "Computation_time", "Steps"]
+        self.indicators = ["Average_Reward", "Computation_time", "Steps", "Success_Failure_Count", "First_successful_episode", "First_successful_policy"]
 
     def initialise_results_table(self):
         for indicator in self.indicators:
@@ -44,12 +44,15 @@ class ResultsGenerator():
 
 
     def plot_computation_time(self):
-        computation_time_data = [self.Monte_carlo_results["Computation_time"][0], self.SARSA_results["Computation_time"][0], self.Q_Learning_results["Computation_time"][0]]
+        mc_ct = sum(self.Monte_carlo_results["Computation_time"]) / len(self.Monte_carlo_results["Computation_time"])
+        sarsa_ct = sum(self.SARSA_results["Computation_time"]) / len(self.SARSA_results["Computation_time"])
+        q_learning_ct = sum(self.Q_Learning_results["Computation_time"]) / len(self.Q_Learning_results["Computation_time"])
+        computation_time_data = [mc_ct, sarsa_ct, q_learning_ct]
         labels = self.algorithm_names
         plt.xticks(range(len(computation_time_data)), labels)
         plt.xlabel("Algorithms")
-        plt.ylabel("Computational time")
-        plt.title("Computational time of different algorithms")
+        plt.ylabel("Average Computational time")
+        plt.title("Average Computational time of different algorithms")
         plt.bar(range(len(computation_time_data)), computation_time_data)
         plt.show()
 
@@ -83,6 +86,22 @@ class ResultsGenerator():
 
         plt.legend(self.algorithm_names)
         plt.xlabel("Episode")
-        plt.ylabel("Steps taken")
-        plt.title("Steps Taken vs Episode")
+        plt.ylabel("Cumulative Steps taken")
+        plt.title("Cumulative Steps Taken vs Episode")
+        plt.show()
+
+    def plot_cumulative_success_count(self):
+        cumulative_success_count = list(map(lambda x: x[0], self.Monte_carlo_results["Success_Failure_Count"]))
+        plt.plot(range(len(cumulative_success_count)), cumulative_success_count, 'r')
+
+        cumulative_success_count = list(map(lambda x: x[0], self.SARSA_results["Success_Failure_Count"]))
+        plt.plot(range(len(cumulative_success_count)), cumulative_success_count, 'b')
+
+        cumulative_success_count = list(map(lambda x: x[0], self.Q_Learning_results["Success_Failure_Count"]))
+        plt.plot(range(len(cumulative_success_count)), cumulative_success_count, 'g')
+
+        plt.legend(self.algorithm_names)
+        plt.xlabel("Episode")
+        plt.ylabel("Cumulative success count")
+        plt.title("Cumulative success vs Episode")
         plt.show()

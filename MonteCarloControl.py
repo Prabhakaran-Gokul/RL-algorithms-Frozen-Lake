@@ -28,7 +28,10 @@ class MonteCarlo(RL_Model_Free_Methods):
                 self.total_reward += reward 
                 break
             state = new_state
+        
+        self.rg.Monte_carlo_results["Success_Failure_Count"].append([self.success_count, self.failure_count])
         self.rg.Monte_carlo_results["Steps"].append(step)
+
         return episode 
 
 
@@ -50,7 +53,21 @@ class MonteCarlo(RL_Model_Free_Methods):
                     self.Q_values[(state, action)] = self.returns[(state, action)] / self.num_of_visits[(state, action)]
                     
                     self.update_policy_table(state)
+                    
+            optimal_path = self.get_optimal_path()
+            if optimal_path[-1] == self.env.n_row * self.env.n_col - 1: #goal state
+                if not self.first_successful_policy_reached:
+                    self.rg.Monte_carlo_results["First_successful_policy"].append([optimal_path, i])
+                    self.first_successful_policy_reached = True
+
+            if not self.first_successful_episode_reached and episode[-1][-1] == 1:
+                self.rg.Monte_carlo_results["First_successful_episode"].append(i)
+                self.first_successful_episode_reached = True
 
         end_time = time.time()
         self.rg.Monte_carlo_results["Computation_time"].append(end_time - start_time)
+        if not self.first_successful_policy_reached:
+            self.rg.Monte_carlo_results["First_successful_policy"].append([[-1], -1])
+        if not self.first_successful_episode_reached:
+            self.rg.Monte_carlo_results["First_successful_episode"].append(-1)
         return self.Q_values

@@ -35,3 +35,4 @@ if __name__ == "__main__":
     rg.plot_all_average_reward_vs_episode()
     rg.plot_all_steps_vs_episode()
     rg.plot_computation_time()
+    rg.plot_cumulative_success_count()

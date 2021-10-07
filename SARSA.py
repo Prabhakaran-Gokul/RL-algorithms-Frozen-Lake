@@ -39,15 +39,31 @@ class SARSA(RL_Model_Free_Methods):
                     
                     self.total_reward += reward
                     break
-
+                
+               
                 state = new_state
                 action = new_action
-            
+
+            if not self.first_successful_episode_reached and reward == 1:
+                self.rg.SARSA_results["First_successful_episode"].append(i)
+                self.first_successful_episode_reached = True
+
+            optimal_path = self.get_optimal_path()
+            if optimal_path[-1] == self.env.n_row * self.env.n_col - 1: #goal state
+                if not self.first_successful_policy_reached:
+                    self.rg.SARSA_results["First_successful_policy"].append([optimal_path, i])
+                    self.first_successful_policy_reached = True
+
             self.rg.SARSA_results["Average_Reward"].append(self.total_reward / (i + 1))
             self.rg.SARSA_results["Steps"].append(step)
+            self.rg.SARSA_results["Success_Failure_Count"].append([self.success_count, self.failure_count])
         
         end_time = time.time()
         self.rg.SARSA_results["Computation_time"].append(end_time - start_time)
+        if not self.first_successful_policy_reached:
+            self.rg.SARSA_results["First_successful_policy"].append([[-1], -1])
+        if not self.first_successful_episode_reached:
+            self.rg.SARSA_results["First_successful_episode"].append(-1)
         return self.Q_values
 
     def generate_episode(self, policy_table):
