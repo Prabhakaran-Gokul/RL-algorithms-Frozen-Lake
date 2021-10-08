@@ -18,21 +18,25 @@ if __name__ == "__main__":
     monte_carlo.write_to_txt_file(Q_values, monte_carlo.name)
     print(monte_carlo.success_count, monte_carlo.failure_count)
     print(monte_carlo.test_policy(monte_carlo.policy_table))
-    env.render(monte_carlo.get_optimal_path())
+    #uncomment the line below to view a path of the optimal policy
+    # env.render(monte_carlo.get_optimal_path())
 
     Q_values = sarsa.run(NUMBER_OF_EPISODES)
     sarsa.write_to_txt_file(Q_values, sarsa.name)
     print(sarsa.success_count, sarsa.failure_count)
     print(sarsa.test_policy(sarsa.policy_table))
-    env.render(sarsa.get_optimal_path())
+    #uncomment the line below to view a path of the optimal policy
+    # env.render(sarsa.get_optimal_path())
 
     Q_values = q_learning.run(NUMBER_OF_EPISODES)
     q_learning.write_to_txt_file(Q_values, q_learning.name)
     print(q_learning.success_count, q_learning.failure_count)
     print(q_learning.test_policy(q_learning.policy_table))
-    env.render(q_learning.get_optimal_path())
+    #uncomment the line below to view a path of the optimal policy
+    # env.render(q_learning.get_optimal_path())
 
-    rg.plot_all_average_reward_vs_episode()
-    rg.plot_all_steps_vs_episode()
-    rg.plot_computation_time()
-    rg.plot_cumulative_success_count()
+    #uncomment the lines below to view graphs plots
+    # rg.plot_all_average_reward_vs_episode()
+    # rg.plot_all_steps_vs_episode()
+    # rg.plot_computation_time()
+    # rg.plot_cumulative_success_count() 

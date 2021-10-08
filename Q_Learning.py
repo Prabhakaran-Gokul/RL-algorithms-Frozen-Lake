@@ -4,6 +4,7 @@ import numpy as np
 from tqdm import tqdm
 import time
 
+#Note that the whole algorithm is the same as the SARSA except the update rule
 class Q_Learning(RL_Model_Free_Methods):
     def __init__(self, env, rg, epsilon, gamma, learning_rate):
         RL_Model_Free_Methods.__init__(self, env, rg, epsilon, gamma)
@@ -25,7 +26,7 @@ class Q_Learning(RL_Model_Free_Methods):
                 new_state , reward, done = self.env.step(action)
                 new_action = np.random.choice(self.actions, p = self.policy_table[new_state])
                 
-                #apply q_learning update rule     
+                #apply q_learning update rule  
                 new_Q_value = max(self.Q_values[(new_state, a)] for a in self.actions)
                 self.Q_values[(state, action)] +=  self.learning_rate * (reward + self.gamma * new_Q_value - self.Q_values[(state, action)])
                 
@@ -80,13 +81,3 @@ class Q_Learning(RL_Model_Free_Methods):
                 break
             state = new_state
         return episode 
-
-# if __name__ == "__main__":
-#     env = Environment(grid_size=GRID_SIZE)
-#     q_learning = Q_Learning(env, epsilon=EPSILON, gamma=GAMMA, learning_rate=LEARNING_RATE)
-#     Q_values = q_learning.run(NUMBER_OF_EPISODES)
-#     q_learning.write_to_txt_file(Q_values, q_learning.name)
-#     print(q_learning.success_count, q_learning.failure_count)
-#     print(q_learning.test_policy(q_learning.policy_table))
-#     print(q_learning.get_optimal_path())
-#     q_learning.rg.plot_average_reward_vs_episode(q_learning.name)

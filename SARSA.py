@@ -10,26 +10,27 @@ class SARSA(RL_Model_Free_Methods):
         self.learning_rate = learning_rate
         self.name = "SARSA"
 
+    #runs the SARSA algorithm
     def run(self, num_of_episodes):
         #tqdm module is used here to display the progress of our training, via a progress bar
-        start_time = time.time()
+        start_time = time.time() # start timer
         print ("SARSA algorithm is starting...")
         for i in tqdm(range(num_of_episodes)):
             step = 0
-            state = self.env.reset()
-            action = np.random.choice(self.actions, p = self.policy_table[state])
+            state = self.env.reset() #resets the enviroment. Agent goes back to the starting point
+            action = np.random.choice(self.actions, p = self.policy_table[state]) #choose a policy according to the policy table
             while True:
                 step += 1
                 if step > MAX_STEPS:
                     break
                 new_state , reward, done = self.env.step(action)
-                new_action = np.random.choice(self.actions, p = self.policy_table[new_state])
+                new_action = np.random.choice(self.actions, p = self.policy_table[new_state])  #choose a policy according to the policy table
                 
                 #apply SARSA update rule
                 new_Q_value = self.Q_values[(new_state, new_action)]
                 self.Q_values[(state, action)] +=  self.learning_rate * (reward + self.gamma * new_Q_value - self.Q_values[(state, action)])
                 
-                self.update_policy_table(state)
+                self.update_policy_table(state) #update the policy table using the epsilon greedy policy
 
                 if done:
                     if reward == 1: 
@@ -44,10 +45,12 @@ class SARSA(RL_Model_Free_Methods):
                 state = new_state
                 action = new_action
 
+            #if agent reaches the goal for the first time, add the corrosponding episode number to the Results Generator
             if not self.first_successful_episode_reached and reward == 1:
                 self.rg.SARSA_results["First_successful_episode"].append(i)
                 self.first_successful_episode_reached = True
 
+            #Generate an optimal path and check if it is the first time it reaches the goal. if yes, append the path and the current episode number to Results generator 
             optimal_path = self.get_optimal_path()
             if optimal_path[-1] == self.env.n_row * self.env.n_col - 1: #goal state
                 if not self.first_successful_policy_reached:
@@ -58,18 +61,21 @@ class SARSA(RL_Model_Free_Methods):
             self.rg.SARSA_results["Steps"].append(step)
             self.rg.SARSA_results["Success_Failure_Count"].append([self.success_count, self.failure_count])
         
-        end_time = time.time()
-        self.rg.SARSA_results["Computation_time"].append(end_time - start_time)
+        end_time = time.time() #end timer
+        self.rg.SARSA_results["Computation_time"].append(end_time - start_time) #add the calculated computational time to Results Generator
+        #if the agent does not each the goal or does not generate an optimal policy, add -1 in the following format to the Results Generator to indicate failure
         if not self.first_successful_policy_reached:
             self.rg.SARSA_results["First_successful_policy"].append([[-1], -1])
         if not self.first_successful_episode_reached:
             self.rg.SARSA_results["First_successful_episode"].append(-1)
         return self.Q_values
 
+    # Generates an episode and returns a list containing multiple steps (ie. [state, action, reward])
     def generate_episode(self, policy_table):
         episode = [] #a list containing lists of [state, action, reward] for every step
-        state = self.env.reset()
+        state = self.env.reset() #send the agent to the starting point
         step = 0
+        #steps will stop generating when the NAX_STEPS is reached or when the agent reaches a hole or a goal
         while True:
             step += 1
             if step > MAX_STEPS:
@@ -81,13 +87,3 @@ class SARSA(RL_Model_Free_Methods):
                 break
             state = new_state
         return episode 
-
-# if __name__ == "__main__":
-#     env = Environment(grid_size=GRID_SIZE)
-#     sarsa = SARSA(env, epsilon=EPSILON, gamma=GAMMA, learning_rate=LEARNING_RATE)
-#     Q_values = sarsa.run(NUMBER_OF_EPISODES)
-#     sarsa.write_to_txt_file(Q_values, sarsa.name)
-#     print(sarsa.success_count, sarsa.failure_count)
-#     print(sarsa.test_policy(sarsa.policy_table))
-#     print(sarsa.get_optimal_path())
-#     sarsa.rg.plot_average_reward_vs_episode(sarsa.name)
